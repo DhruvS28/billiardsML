@@ -168,7 +168,7 @@ class GameScene extends Phaser.Scene {
   cueHitLogic() {
     let startx: number, starty: number;
 
-    this.input.on('pointerdown', (pointer) => {
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       startx = pointer.downX;
       starty = pointer.downY;
       this.isProjecting = true;
@@ -176,13 +176,13 @@ class GameScene extends Phaser.Scene {
       this.stopAllBalls();
     });
 
-    this.input.on('pointermove', (pointer) => {
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (!this.isProjecting) return;
       this.showProjectedPath(startx, starty, pointer.x, pointer.y);
     });
 
 
-    this.input.on('pointerup', (pointer) => {
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
       this.isProjecting = false;
       this.projectionLine.clear();
 
