@@ -1,5 +1,6 @@
 import './style.scss'
 import Phaser from 'phaser';
+const base = import.meta.env.BASE_URL
 
 // how to make games and physics in javascript
 
@@ -52,19 +53,19 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('bg', '/assets/BilliardKit/Billiards Table Big.png');
-    this.load.image('whiteBall', '/assets/BilliardKit/Ball-White.png');
-    this.load.image('tableBorder', '/assets/BilliardKit/Table Border.png');
+    this.load.image('bg', `${base}assets/BilliardKit/Billiards Table Big.png`);
+    this.load.image('whiteBall', `${base}assets/BilliardKit/Ball-White.png`);
+    this.load.image('tableBorder', `${base}assets/BilliardKit/Table Border.png`);
 
     for (let i = 1; i <= 15; i++) {
-      this.load.image(`b${i}`, `/assets/BilliardKit/b${i}.png`);
+      this.load.image(`b${i}`, `${base}assets/BilliardKit/b${i}.png`);
     }
   }
   create() {
     this.add.image(0, 0, 'bg').setOrigin(0, 0).setDisplaySize(sizes.width, sizes.height);
     // this.matter.world.setBounds(20, 20, sizes.width - 40, sizes.height - 40);
 
-    this.scoreDisplay = document.getElementById('scoreBoard');
+    this.scoreDisplay = document.querySelector('.scoreBoard');
     this.setBorders(this.borderPoints);
     this.setPockets(this.pockets);
 
