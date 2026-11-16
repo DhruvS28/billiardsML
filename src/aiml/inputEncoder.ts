@@ -3,10 +3,7 @@ import type { BallState } from '../interfaces'
 
 export function encodeGameState(state: any): number[] {
   const encodedState: number[] = [];
-  // console.log(state)
 
-
-  // Encode cue ball state
   encodedState.push(state.cueBall.posx / state.tableWidth);
   encodedState.push(state.cueBall.posy / state.tableHeight);
   encodedState.push(state.cueBall.velx / 18);
@@ -21,6 +18,5 @@ export function encodeGameState(state: any): number[] {
     encodedState.push(!ball.pocketed ? 1 : 0);
   });
   encodedState.push(state.isMoving ? 1 : 0)
-  // encodedState.push(state.cueBall.pocketed ? 1 : 0);
   return encodedState;
 }

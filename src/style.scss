@@ -1,10 +1,10 @@
 :root {
   --text: #181818;
   --text-h: #08060d;
-  --bg: #303f31;
+  --bg: #3f604e;
   --border: #007700;
   --code-bg: #f4f3ec;
-  --accent: #aa3bff;
+  --accent: #005926;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
@@ -74,7 +74,22 @@ main {
 }
 
 #gameCanvas {
-  border: 2px solid var(--border);
+  border: 0px solid var(--border);
   display: flex;
   z-index: 1;
+}
+
+.actionBtns {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 20px;
+
+  button {
+    padding: 10px;
+    width: 100px;
+    border-radius: 10px;
+    border: 1px solid black;
+    background-color: var(--accent);
+  }
 }
