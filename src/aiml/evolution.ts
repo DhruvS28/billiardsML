@@ -47,7 +47,6 @@ export class Evolution {
     if (!stats.hitObjectBall && !stats.cueBallPocketed && !stats.objectBallsPocketed) {
       individual.fitness -= 2;
     }
-
     return individual.fitness;
   }
 

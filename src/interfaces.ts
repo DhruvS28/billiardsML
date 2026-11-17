@@ -36,13 +36,3 @@ export interface NetworkArchitecture {
 }
 
 
-// Constants to be used for training
-export const networkArch: NetworkArchitecture = {
-  input: 81,
-  layer1: 64,
-  layer2: 32,
-  output: 2
-}
-
-export const MAX_SHOTS = 10;
-

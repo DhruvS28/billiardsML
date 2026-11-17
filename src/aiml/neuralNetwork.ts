@@ -1,4 +1,5 @@
-import { networkArch, type NetworkArchitecture } from "../interfaces";
+import { networkArch } from "../config";
+import { type NetworkArchitecture } from "../interfaces";
 
 export class NeuralNetwork {
 

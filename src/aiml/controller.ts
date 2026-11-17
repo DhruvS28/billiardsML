@@ -1,11 +1,13 @@
 import Phaser from 'phaser';
+import Matter from 'matter-js';
+import type { Simulation } from '../simulation';
 
 export class Controller {
 
-  scene: any
+  simulation: any
 
-  constructor(scene: any) {
-    this.scene = scene;
+  constructor(simulation: Simulation) {
+    this.simulation = simulation;
   }
 
   convertOutput(predictionOutput: number[]): Phaser.Math.Vector2 {
@@ -33,10 +35,10 @@ export class Controller {
       return;
     }
     
-    this.scene.cueBall.setVelocity(vector.x, vector.y);
-    this.scene.isShotActive = true;
+    Matter.Body.setVelocity(this.simulation.cueBall, { x: vector.x, y: vector.y });
+    this.simulation.isShotActive = true;
 
-    this.scene.stats = {
+    this.simulation.shotStats = {
       hitObjectBall: false,
       cueBallPocketed: false,
       objectBallsPocketed: 0
