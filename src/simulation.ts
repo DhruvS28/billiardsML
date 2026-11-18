@@ -8,6 +8,7 @@ export class Simulation {
   engine!: Matter.Engine;
   cueBall!: Matter.Body;
   objectBalls!: Matter.Body[];
+  settledFrames = 0;
 
   gameScore: number = 0;
   shotStats: ShotStats = {
@@ -16,14 +17,12 @@ export class Simulation {
     objectBallsPocketed: 0
   };
 
-  isShotActive: boolean = false;
   pocketedBalls: Set<Matter.Body> = new Set<Matter.Body>();
   cueBallPocketed: boolean = false;
   state = SimulationState.READY;
 
   constructor() {
     this.engine = Matter.Engine.create();
-    let world = this.engine.world;
     this.engine.gravity.y = 0;
 
     this.createCueBall();
@@ -34,9 +33,28 @@ export class Simulation {
   }
 
   update(delta: number) {
-    if (this.state === SimulationState.RUNNING) {
-      Matter.Engine.update(this.engine, delta);
+    if (this.state !== SimulationState.RUNNING) return;
+
+    Matter.Engine.update(this.engine, delta);
+
+    // mark shot as COMPLETE after three consecutive settled updates (150-180ms)
+    this.settledFrames = this.isTableStatic() ? this.settledFrames + 1 : 0;
+    if (this.settledFrames >= 3) {
+      this.settledFrames = 0;
+      this.state = SimulationState.COMPLETE;
     }
+  }
+
+  isTableStatic() {
+    return this.objectBalls
+      .filter(ball => !this.pocketedBalls.has(ball))
+      .every(ball =>
+        Math.hypot(ball.velocity.x, ball.velocity.y) < 0.1
+      ) &&
+      Math.hypot(
+        this.cueBall.velocity.x,
+        this.cueBall.velocity.y
+      ) < 0.1;
   }
 
   createCueBall() {
@@ -132,7 +150,13 @@ export class Simulation {
         const ball = bodies.find(body => body.label !== 'pocket');
 
         if (ball?.label === ballTypes.CUE_BALL) this.cueBallPocketed = true;
-        else if (ball?.label === ballTypes.OBJECT_BALL) this.pocketedBalls.add(ball);
+        else if (
+          ball?.label === ballTypes.OBJECT_BALL &&
+          !this.pocketedBalls.has(ball)
+        ) {
+          this.pocketedBalls.add(ball);
+          this.shotStats.objectBallsPocketed++;
+        }
       }
 
       if (this.cueBallPocketed) {
@@ -157,7 +181,7 @@ export class Simulation {
       objectBallsPocketed: 0
     };
     this.gameScore = 0;
-    this.isShotActive = false;
+    this.settledFrames = 0;
     this.state = SimulationState.READY;
   }
 }

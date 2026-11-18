@@ -2,7 +2,6 @@ import './style.scss'
 import Phaser from 'phaser';
 import Matter from 'matter-js';
 import { BALL_CONFIG, networkArch, NETWORKS, POCKET_SIZE, SimulationState, TABLE_CONFIG, tableSizes } from './config';
-import { Simulation } from './simulation';
 import { Evolution } from "./aiml/evolution";
 import { TrainingManager } from './aiml/trainingManager'
 
@@ -64,12 +63,6 @@ class GameScene extends Phaser.Scene {
 
     this.trainingManager.simulations.forEach(sim => sim.update(16.667)); // matter-js recommended for 60 fps
 
-    for (const ball of this.trainingManager.visualize.pocketedBalls) {
-      const index = this.trainingManager.visualize.objectBalls.indexOf(ball);
-      if (index === -1) continue;
-      this.objectBallsSprites[index].visible = false;
-    }
-
     this.cueBallSprite.setPosition(
       this.trainingManager.visualize.cueBall.position.x,
       this.trainingManager.visualize.cueBall.position.y
@@ -80,18 +73,13 @@ class GameScene extends Phaser.Scene {
         body.position.x,
         body.position.y
       );
+      sprite.setVisible(!this.trainingManager.visualize.pocketedBalls.has(body));
     });
 
     if (this.isTraining) {
       this.trainingManager.updateTraining()
     }
 
-    for (const sim of this.trainingManager.simulations) {
-      if (sim.isShotActive && this.isTableStatic(sim)) {
-        sim.isShotActive = false;
-        sim.state = SimulationState.READY;
-      }
-    }
   }
 
 
@@ -137,7 +125,7 @@ class GameScene extends Phaser.Scene {
       if (this.isTraining) return;
 
       this.stopAllBalls(); // better for user experience
-      if (!this.isTableStatic(this.trainingManager.visualize)) {
+      if (!this.trainingManager.visualize.isTableStatic()) {
         return;
       }
 
@@ -179,8 +167,8 @@ class GameScene extends Phaser.Scene {
 
       Matter.Body.setVelocity(this.trainingManager.visualize.cueBall, { x: shot.x, y: shot.y });
 
-      this.trainingManager.visualize.isShotActive = true;
       this.trainingManager.visualize.state = SimulationState.RUNNING;
+      this.trainingManager.visualize.settledFrames = 0;
       this.trainingManager.visualize.shotStats = {
         hitObjectBall: false,
         cueBallPocketed: false,
@@ -188,18 +176,6 @@ class GameScene extends Phaser.Scene {
       };
     });
 
-  }
-
-  isTableStatic(sim : Simulation) {
-    return sim.objectBalls
-      .filter(ball => !sim.pocketedBalls.has(ball))
-      .every(ball =>
-        Math.hypot(ball.velocity.x, ball.velocity.y) < 0.1
-      ) &&
-      Math.hypot(
-        sim.cueBall.velocity.x,
-        sim.cueBall.velocity.y
-      ) < 0.1;
   }
 
   stopAllBalls() {

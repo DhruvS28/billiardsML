@@ -1,6 +1,6 @@
 import * as gameState from './gameState'
 import * as inputEncoder from './inputEncoder'
-import { MAX_SHOTS, SimulationState } from "../config";
+import { MAX_SHOTS, NETWORKS, SimulationState } from "../config";
 import { Simulation } from "../simulation";
 import { Controller } from "./controller";
 import { Evolution } from "./evolution";
@@ -28,29 +28,37 @@ export class TrainingManager {
       this.shots.push(0);
       this.finished.push(false);
     }
-    this.visualize = this.simulations[1];
+    this.visualize = this.simulations[0];
   }
 
   updateTraining(): void {
     for (let i = 0; i < this.simulations.length; i++) {
-      if (this.simulations[i].state === SimulationState.READY) {
-        this.trainingStep(i);
+      if (this.finished[i]) continue;
+
+      const simulation = this.simulations[i];
+      if (simulation.state === SimulationState.COMPLETE) {
+        if (this.shots[i] !== 0) {
+          const individual = this.evolution.population[i];
+          this.evolution.calculateFitness(individual, simulation.shotStats);
+
+          if (this.shots[i] >= MAX_SHOTS) {
+            this.finishEvaluation(i);
+          } else {
+            simulation.state = SimulationState.READY;
+          }
+        } else {
+          simulation.state = SimulationState.READY;
+        }
+        continue;
       }
+
+      if (simulation.state === SimulationState.READY) this.trainingStep(i);
     }
   }
 
   trainingStep(index: number) {
-    console.log(index)
     const individual = this.evolution.population[index];
-    const prediction = this.getPrediction(individual, this.simulations[index])
-    if (this.shots[index] !== 0) {
-      this.evolution.calculateFitness(individual, this.simulations[index].shotStats);
-    }
-    if (this.shots[index] >= MAX_SHOTS) {
-      this.finishEvaluation(individual, index);
-      return;
-    }
-
+    const prediction = this.getPrediction(individual, this.simulations[index]);
     this.executeShot(prediction, index);
   }
 
@@ -70,33 +78,23 @@ export class TrainingManager {
     this.controllers[index].execute(prediction);
   }
 
-  finishEvaluation(individual: Individual, index: number) {
+  finishEvaluation(index: number) {
     this.finished[index] = true;
     const allFinished = this.finished.every(value => value === true);
     if (allFinished) {
-    this.evolution.evaluateCandidate(individual);
+      this.evolution.population.forEach(candidate => this.evolution.evaluateCandidate(candidate));
     
-    console.log(this.finished)
-    
+      console.log("Generation: ", this.evolution.generation + 1);
+      console.log("Generation fitness: ", this.evolution.totalFitness / NETWORKS);
+      console.log("Best fitness: ", this.evolution.bestFitness);
+      // console.log("Accepted: " + this.evolution.accepted + " ~~~ Average: ", (this.evolution.totalFitness / NETWORKS));
+      console.log("================================");
+
+      this.evolution.evaluateGeneration();
       this.finished.fill(false);
       this.shots.fill(0);
-      console.log(this.finished);
-
-      console.log("Generation:", this.evolution.generation);
-      console.log("Candidate fitness:", individual.fitness);
-      console.log("Best fitness:", this.evolution.bestFitness);
-      console.log("Accepted: " + this.evolution.accepted + " ~~~ Average: ", (this.evolution.totalFitness / this.evolution.generation));
-      console.log("================================");
-      // this.evolution.evaluateGeneration();
-      this.simulations.forEach(sim => sim.resetSimulation());
+      this.simulations.forEach(simulation => simulation.resetSimulation());
+      this.visualize = this.simulations[0];
     }
-    // this.evolution.iterateCurrentIndividual();
-    // console.log(this.evolution.currentIndividualIndex)
-
-
-
-    // const nextCandidate = this.evolution.createCandidate(this.evolution.bestIndividual!);
-
-    // this.evolution.setCurrentIndividual(nextCandidate);
   }
 }

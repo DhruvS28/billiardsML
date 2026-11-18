@@ -8,9 +8,9 @@ export const networkArch: NetworkArchitecture = {
   output: 2
 }
 
-export const NETWORKS = 2;
-export const MAX_SHOTS = 2;
-export const ELITE_COUNT = 1;
+export const NETWORKS = 100;
+export const MAX_SHOTS = 10;
+export const ELITE_COUNT = 5;
 
 // Other various constants
 

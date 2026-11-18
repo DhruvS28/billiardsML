@@ -1,3 +1,4 @@
+import { ELITE_COUNT, NETWORKS } from '../config';
 import type { Individual, NetworkArchitecture } from '../interfaces';
 import { NeuralNetwork } from './neuralNetwork'
 
@@ -58,6 +59,10 @@ export class Evolution {
     return this.population[this.currentIndividualIndex];
   }
 
+  iterateCurrentIndividual() {
+    this.currentIndividualIndex++;
+  }
+
   setCurrentIndividual(individual: Individual) {
     this.population[this.currentIndividualIndex] = individual;
   }
@@ -101,13 +106,30 @@ export class Evolution {
     return { network: newNetwork, fitness: 0 };
   }
 
+  // by itself: hill climbing
   evaluateCandidate(candidate: Individual) {
     if (candidate.fitness > this.bestFitness) {
-      this.bestIndividual = candidate;
+      this.bestIndividual = {
+        network: candidate.network.clone(),
+        fitness: candidate.fitness
+      };
       this.bestFitness = candidate.fitness;
-      this.accepted++;
     }
     this.totalFitness += candidate.fitness;
+  }
+
+  // population-based neuroevolution.
+  evaluateGeneration() {
+    const elitePopulation = [...this.population]
+      .sort((a, b) => b.fitness - a.fitness).splice(0, ELITE_COUNT);
+    const newPopulation = elitePopulation.map(elite => ({ network: elite.network.clone(), fitness: 0 }));
+
+    for (let i = 0; i < (NETWORKS - ELITE_COUNT); i++) {
+      const parent = newPopulation[Math.floor(Math.random() * ELITE_COUNT)];
+      newPopulation.push(this.createCandidate(parent));
+    }
+    this.population = newPopulation;
+    this.totalFitness = 0;
     this.generation++;
   }
 

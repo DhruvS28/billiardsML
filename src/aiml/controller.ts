@@ -33,12 +33,18 @@ export class Controller {
     let vector = this.convertOutput(predictionOutput);
 
     if (vector.length() === 0) {
+      this.simulation.shotStats = {
+        hitObjectBall: false,
+        cueBallPocketed: false,
+        objectBallsPocketed: 0
+      };
+      this.simulation.state = SimulationState.COMPLETE;
       return;
     }
     
     Matter.Body.setVelocity(this.simulation.cueBall, { x: vector.x, y: vector.y });
-    this.simulation.isShotActive = true;
     this.simulation.state = SimulationState.RUNNING;
+    this.simulation.settledFrames = 0;
     this.simulation.shotStats = {
       hitObjectBall: false,
       cueBallPocketed: false,
