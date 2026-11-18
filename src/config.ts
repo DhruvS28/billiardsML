@@ -8,14 +8,16 @@ export const networkArch: NetworkArchitecture = {
   output: 2
 }
 
+export const NETWORKS = 2;
+export const MAX_SHOTS = 2;
+export const ELITE_COUNT = 1;
+
 // Other various constants
 
 export const tableSizes = {
   width: 700,
   height: 350,
 }
-
-export const MAX_SHOTS = 10;
 
 export const ballTypes = {
   CUE_BALL: "cueBall",
@@ -50,3 +52,9 @@ export const TABLE_CONFIG = {
     { x: (tableSizes.width) * 0.98, y: (tableSizes.height) * 0.965 },
   ]
 };
+
+export const SimulationState = {
+  READY: "READY",
+  RUNNING: "RUNNING",
+  COMPLETE: "COMPLETE",
+}

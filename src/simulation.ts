@@ -1,6 +1,6 @@
 import Matter from 'matter-js';
 import Phaser from 'phaser';
-import { BALL_CONFIG, ballTypes, tableSizes } from './config';
+import { BALL_CONFIG, ballTypes, tableSizes, SimulationState, TABLE_CONFIG } from './config';
 import type { ShotStats } from './interfaces';
 
 export class Simulation {
@@ -9,6 +9,7 @@ export class Simulation {
   cueBall!: Matter.Body;
   objectBalls!: Matter.Body[];
 
+  gameScore: number = 0;
   shotStats: ShotStats = {
     hitObjectBall: false,
     cueBallPocketed: false,
@@ -18,8 +19,7 @@ export class Simulation {
   isShotActive: boolean = false;
   pocketedBalls: Set<Matter.Body> = new Set<Matter.Body>();
   cueBallPocketed: boolean = false;
-
-  gameScore: number = 0;
+  state = SimulationState.READY;
 
   constructor() {
     this.engine = Matter.Engine.create();
@@ -28,15 +28,15 @@ export class Simulation {
 
     this.createCueBall();
     this.createObjectBalls();
-
+    this.setBorders(TABLE_CONFIG.borders);
+    this.setPockets(TABLE_CONFIG.pockets);
     this.setCollisions();
   }
 
   update(delta: number) {
-    // console.log(
-    // Matter.Composite.allBodies(this.engine.world).length
-    // );
-    Matter.Engine.update(this.engine, delta);
+    if (this.state === SimulationState.RUNNING) {
+      Matter.Engine.update(this.engine, delta);
+    }
   }
 
   createCueBall() {
@@ -58,6 +58,7 @@ export class Simulation {
       this.objectBalls.forEach(ball => Matter.Composite.remove(this.engine.world, ball));
     }
     this.objectBalls = [];
+    this.pocketedBalls.clear();
 
     const spacing = BALL_CONFIG.spacing;
     const startX = tableSizes.width / 2 + 80;
@@ -136,13 +137,27 @@ export class Simulation {
 
       if (this.cueBallPocketed) {
         this.shotStats.cueBallPocketed = true;
+        this.cueBallPocketed = false;
         Matter.Body.setVelocity(this.cueBall!, { x: 0, y: 0 });
         Matter.Body.setPosition(this.cueBall!, {
           x: tableSizes.width / 3,
           y: tableSizes.height / 2
         });
-        this.cueBallPocketed = false;
       }
     });
+  }
+
+  resetSimulation() {
+    this.createCueBall();
+    this.createObjectBalls();
+
+    this.shotStats = {
+      hitObjectBall: false,
+      cueBallPocketed: false,
+      objectBallsPocketed: 0
+    };
+    this.gameScore = 0;
+    this.isShotActive = false;
+    this.state = SimulationState.READY;
   }
 }

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import Matter from 'matter-js';
 import type { Simulation } from '../simulation';
+import { SimulationState } from '../config';
 
 export class Controller {
 
@@ -37,7 +38,7 @@ export class Controller {
     
     Matter.Body.setVelocity(this.simulation.cueBall, { x: vector.x, y: vector.y });
     this.simulation.isShotActive = true;
-
+    this.simulation.state = SimulationState.RUNNING;
     this.simulation.shotStats = {
       hitObjectBall: false,
       cueBallPocketed: false,
